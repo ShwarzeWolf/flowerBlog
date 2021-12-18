@@ -36,5 +36,10 @@ def post(post_id):
     return render_template('post.html', post=post)
 
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+
 if __name__ == '__main__':
     app.run()
