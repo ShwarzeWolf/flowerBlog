@@ -1,10 +1,9 @@
-from flask import Flask, render_template, request, url_for, flash, redirect
+from flask import render_template, request, url_for, flash, redirect
 from werkzeug.exceptions import abort
 
 from repositories import get_all_posts, get_post, add_post, update_post, delete_post
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your secret key'
+from app import app
 
 
 @app.route('/')
@@ -13,9 +12,9 @@ def draw_main_page():
     return render_template('index.html', posts=posts)
 
 
-@app.route('/<int:post_id>')
-def post(post_id):
-    post = get_post(post_id)
+@app.route('/<int:id>')
+def get_blog_post(id):
+    post = get_post(id)
 
     if post is None:
         abort(404)
@@ -66,7 +65,3 @@ def delete(id):
     delete_post(id)
     flash('"{}" was successfully deleted!'.format(post['title']))
     return redirect(url_for('draw_main_page'))
-
-
-if __name__ == '__main__':
-    app.run()
