@@ -47,3 +47,9 @@ def delete_post(id):
     conn.close()
 
 
+def add_user(name, email, password):
+    conn = get_db_connection()
+    conn.execute('INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
+                 (name, email, password))
+    conn.commit()
+    conn.close()
