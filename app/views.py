@@ -2,10 +2,11 @@ from flask import render_template, request, url_for, flash, redirect
 from werkzeug.exceptions import abort
 
 from app.forms import User_registration_form
-from app.repositories import get_post, get_all_posts, update_post, delete_post, add_post
+from app.alchemy_repositories import get_post, get_all_posts, update_post, delete_post, add_post, add_user
 from app import app
 
 
+#http://127.0.0.1:5000/about
 @app.route('/')
 def draw_main_page():
     posts = get_all_posts()
@@ -84,6 +85,7 @@ def register_user():
             return redirect(url_for('draw_main_page'))
 
     return render_template('registration.html', form=form)
+
 
 if __name__ == '__main__':
     app.run()
