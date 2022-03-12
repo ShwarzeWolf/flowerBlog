@@ -3,8 +3,13 @@ from datetime import datetime
 from sqlalchemy import update
 from app import app
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, current_user
+
 
 db = SQLAlchemy(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+
 
 class Post(db.Model):
     __tablename__ = 'posts'
@@ -21,6 +26,16 @@ class Comment(db.Model):
     created = db.Column(db.DateTime(), default=datetime.utcnow())
     content = db.Column(db.Text(), nullable=False)
     post_id = db.Column(db.Integer(), db.ForeignKey('posts.id'))
+
+
+class User(db.Model, UserMixin):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    login = db.Column(db.String(100), nullable=False, unique=True)
+    email = db.Column(db.String(100), nullable=False, unique=True)
+    password_hash = db.Column(db.String(100), nullable=False)
+    created = db.Column(db.DateTime(), default=datetime.utcnow())
+
 
 db.create_all(app=app)
 db.session.commit()
@@ -63,5 +78,16 @@ def delete_post(id):
     db.session.commit()
 
 
-def add_user(name, email, password):
-    pass
+def add_user(login, email, password_hash):
+    new_user = User(login=login, email=email, password_hash=password_hash)
+    db.session.add(new_user)
+    db.session.commit()
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.query(User).get(user_id)
+
+
+def load_user_by_name(user_name):
+    return db.session.query(User).filter(User.login == user_name).first()

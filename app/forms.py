@@ -11,6 +11,12 @@ class User_registration_form(FlaskForm):
     submit = SubmitField("Submit")
 
 
+class User_login_form(FlaskForm):
+    name = StringField("Name: ", validators=[DataRequired()])
+    password = PasswordField("Password: ", validators=[DataRequired()])
+    submit = SubmitField("Submit")
+
+
 class Comment_creation_form(FlaskForm):
     content = StringField("Content: ", validators=[DataRequired()])
     submit = SubmitField("Submit")

@@ -1,13 +1,14 @@
 from flask import render_template, request, url_for, flash, redirect
+from flask_login import login_required, login_user, current_user, logout_user
 from werkzeug.exceptions import abort
+from werkzeug.security import generate_password_hash, check_password_hash
 
-from app.forms import User_registration_form, Comment_creation_form
-from app.alchemy_repositories import get_post, get_all_posts, update_post, \
-    delete_post, add_post, add_user, get_comments, add_comment
 from app import app
+from app.alchemy_repositories import get_post, get_all_posts, update_post, \
+    delete_post, add_post, add_user, get_comments, add_comment, load_user_by_name
+from app.forms import User_registration_form, Comment_creation_form, User_login_form
 
 
-#http://127.0.0.1:5000/about
 @app.route('/')
 def draw_main_page():
     posts = get_all_posts()
@@ -93,12 +94,41 @@ def register_user():
         if password != password_again:
             flash('Enter equal passwords!')
         else:
-            print(f'{name} {email}')
-            add_user(name, email, password)
+            password_hash = generate_password_hash(password)
+            add_user(name, email, password_hash)
             return redirect(url_for('draw_main_page'))
 
     return render_template('registration.html', form=form)
 
 
-if __name__ == '__main__':
-    app.run()
+@app.route('/login/', methods=['post', 'get'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('admin'))
+
+    form = User_login_form()
+
+    if form.validate_on_submit():
+        user = load_user_by_name(form.name.data)
+
+        if user and check_password_hash(user.password_hash, form.password.data):
+            login_user(user, remember=True)
+            return redirect(url_for('admin'))
+
+        flash("Invalid username/password", 'error')
+        return redirect(url_for('login'))
+
+    return render_template('login.html', form=form)
+
+
+@app.route('/personal_cabinet/')
+@login_required
+def admin():
+    return render_template('personal.html', user = current_user)
+
+@app.route('/logout/')
+@login_required
+def logout():
+    logout_user()
+    flash("You have been logged out.")
+    return redirect(url_for('login'))
