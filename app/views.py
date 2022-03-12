@@ -1,8 +1,9 @@
 from flask import render_template, request, url_for, flash, redirect
 from werkzeug.exceptions import abort
 
-from app.forms import User_registration_form
-from app.alchemy_repositories import get_post, get_all_posts, update_post, delete_post, add_post, add_user
+from app.forms import User_registration_form, Comment_creation_form
+from app.alchemy_repositories import get_post, get_all_posts, update_post, \
+    delete_post, add_post, add_user, get_comments, add_comment
 from app import app
 
 
@@ -16,11 +17,23 @@ def draw_main_page():
 @app.route('/<int:post_id>')
 def post(post_id):
     post = get_post(post_id)
-
+    comments = get_comments(post_id)
     if post is None:
         abort(404)
 
-    return render_template('post.html', post=post)
+    return render_template('post.html', post=post, comments=comments)
+
+
+@app.route('/<int:post_id>/comments/create', methods=('GET', 'POST'))
+def create_comment(post_id):
+    form = Comment_creation_form()
+
+    if form.validate_on_submit():
+        content = form.content.data
+        add_comment(post_id=post_id, content=content)
+        return redirect(url_for('post', post_id=post_id))
+
+    return render_template('create_comment.html', form=form)
 
 
 @app.route('/about')

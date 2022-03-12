@@ -9,3 +9,8 @@ class User_registration_form(FlaskForm):
     password = PasswordField("Password: ", validators=[DataRequired()])
     passwordRepeatFieled = PasswordField("Password again: ", validators=[DataRequired()])
     submit = SubmitField("Submit")
+
+
+class Comment_creation_form(FlaskForm):
+    content = StringField("Content: ", validators=[DataRequired()])
+    submit = SubmitField("Submit")

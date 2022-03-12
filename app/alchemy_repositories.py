@@ -1,10 +1,41 @@
+from datetime import datetime
+
 from sqlalchemy import update
 from app import app
 from flask_sqlalchemy import SQLAlchemy
-from models import Post
 
 db = SQLAlchemy(app)
-db.session.create_all()
+
+class Post(db.Model):
+    __tablename__ = 'posts'
+    id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+    created = db.Column(db.DateTime(), default=datetime.utcnow())
+    title = db.Column(db.Text(), nullable=False)
+    content = db.Column(db.Text(), nullable=False)
+    comments = db.relationship('Comment')
+
+
+class Comment(db.Model):
+    __tablename__ = 'comments'
+    id = db.Column(db.Integer(), primary_key=True, unique=True, autoincrement=True)
+    created = db.Column(db.DateTime(), default=datetime.utcnow())
+    content = db.Column(db.Text(), nullable=False)
+    post_id = db.Column(db.Integer(), db.ForeignKey('posts.id'))
+
+db.create_all(app=app)
+db.session.commit()
+
+def get_comments(post_id):
+    post = get_post(post_id)
+
+    return post.comments
+
+
+def add_comment(post_id, content):
+    new_comment = Comment(post_id=post_id, content=content)
+    db.session.add(new_comment)
+    db.session.commit()
+
 
 def get_post(post_id):
     return Post.query.get(post_id)
